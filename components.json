@@ -1,0 +1,130 @@
+[
+  {
+    "system_code": "X45",
+    "component_type": "drive_unit",
+    "component_name": "Conveyor sections.............................................................442 End drive units, direct drive, no slip clutch........................450 X45",
+    "part_number": null,
+    "specifications": {
+      "voltage": 446,
+      "type": "End"
+    },
+    "dimensions": {},
+    "materials": [],
+    "compatibility": [
+      "X65",
+      "X45",
+      "XS"
+    ],
+    "weight_kg": null,
+    "price_euro": null,
+    "description": "",
+    "image_url": null,
+    "page_reference": 1
+  },
+  {
+    "system_code": "X65",
+    "component_type": "bend",
+    "component_name": "Conveyor frame components............................................446 Vertical bends....................................................................454 X65",
+    "part_number": null,
+    "specifications": {
+      "type": "Vertical",
+      "direction": "up"
+    },
+    "dimensions": {},
+    "materials": [],
+    "compatibility": [
+      "X85",
+      "XK",
+      "X65",
+      "X180",
+      "XH"
+    ],
+    "weight_kg": null,
+    "price_euro": null,
+    "description": "",
+    "image_url": null,
+    "page_reference": 1
+  },
+  {
+    "system_code": "X65",
+    "component_type": "bend",
+    "component_name": "Without bend 1200 N X65",
+    "part_number": null,
+    "specifications": {},
+    "dimensions": {},
+    "materials": [
+      "Plastic"
+    ],
+    "compatibility": [
+      "X65",
+      "X85"
+    ],
+    "weight_kg": null,
+    "price_euro": null,
+    "description": "",
+    "image_url": null,
+    "page_reference": 3
+  },
+  {
+    "system_code": "X65",
+    "component_type": "drive_unit",
+    "component_name": "Drive units without motors can be ordered using the des-X65",
+    "part_number": null,
+    "specifications": {
+      "type": "End"
+    },
+    "dimensions": {},
+    "materials": [],
+    "compatibility": [
+      "X65",
+      "X85"
+    ],
+    "weight_kg": null,
+    "price_euro": null,
+    "description": "",
+    "image_url": null,
+    "page_reference": 9
+  },
+  {
+    "system_code": "XH",
+    "component_type": "drive_unit",
+    "component_name": "on the motor specified during the configuration. XH",
+    "part_number": null,
+    "specifications": {
+      "type": "End"
+    },
+    "dimensions": {},
+    "materials": [],
+    "compatibility": [
+      "X180",
+      "XK",
+      "XH"
+    ],
+    "weight_kg": null,
+    "price_euro": null,
+    "description": "",
+    "image_url": null,
+    "page_reference": 9
+  },
+  {
+    "system_code": "XK",
+    "component_type": "drive_unit",
+    "component_name": "well as fixed speed motors (F). XKP",
+    "part_number": null,
+    "specifications": {
+      "type": "End"
+    },
+    "dimensions": {},
+    "materials": [],
+    "compatibility": [
+      "X180",
+      "XK",
+      "X300"
+    ],
+    "weight_kg": 0.3,
+    "price_euro": null,
+    "description": "",
+    "image_url": null,
+    "page_reference": 9
+  }
+]

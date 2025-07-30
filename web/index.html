@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexLink Configuration Tool</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #334155;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel h2 {
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .system-grid {
+            display: grid;
+            gap: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .system-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .system-card:hover {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .system-card.selected {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+        }
+
+        .system-code {
+            font-weight: bold;
+            color: #1d4ed8;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .system-name {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .system-specs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .spec-item {
+            background: #f1f5f9;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .requirements {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .results {
+            grid-column: 1 / -1;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation h3 {
+            color: #166534;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .rec-system {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #22c55e;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .rec-system h4 {
+            color: #166534;
+            margin-bottom: 0.5rem;
+        }
+
+        .rec-system p {
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8fafc;
+            color: #475569;
+            border: 2px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            color: #64748b;
+            padding: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            border: 2px solid #fca5a5;
+            color: #dc2626;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%);
+            border: 2px solid #bbf7d0;
+            color: #166534;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: #f8fafc;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: white;
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        .tab:hover {
+            background: #e2e8f0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .components-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .components-table th {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .components-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .components-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .components-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .component-type {
+            font-weight: 600;
+            color: #1d4ed8;
+        }
+
+        .component-specs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .component-spec {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 FlexLink Configuration Tool</h1>
+            <p>Prototype - Select conveyor systems based on your requirements</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalSystems">-</div>
+                <div class="stat-label">Total Systems</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="selectedCount">0</div>
+                <div class="stat-label">Selected Systems</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="compatibleCount">-</div>
+                <div class="stat-label">Compatible Systems</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Available Systems -->
+            <div class="panel">
+                <h2>🏗️ Available Systems</h2>
+                <div id="systemsList" class="system-grid">
+                    <div class="loading">Loading systems...</div>
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            <div class="panel">
+                <h2>📋 Requirements</h2>
+                <div class="requirements">
+                    <div class="form-group">
+                        <label for="maxLoad">Maximum Load per Link (kg)</label>
+                        <input type="number" id="maxLoad" step="0.1" min="0" placeholder="e.g., 2.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chainWidth">Preferred Chain Width (mm)</label>
+                        <select id="chainWidth">
+                            <option value="">Any width</option>
+                            <option value="43">43mm (X45)</option>
+                            <option value="44">44mm (XS)</option>
+                            <option value="63">63mm (X65)</option>
+                            <option value="83">83mm (X85)</option>
+                            <option value="103">103mm (XH/XK)</option>
+                            <option value="175">175mm (X180)</option>
+                            <option value="295">295mm (X300)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="application">Application Type</label>
+                        <select id="application">
+                            <option value="">Select application</option>
+                            <option value="small_parts">Small Parts & Components</option>
+                            <option value="bottles">Bottles & Containers</option>
+                            <option value="boxes">Boxes & Packaging</option>
+                            <option value="automotive">Automotive Parts</option>
+                            <option value="food">Food Products</option>
+                            <option value="electronics">Electronics</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="configName">Configuration Name</label>
+                        <input type="text" id="configName" placeholder="My Assembly Line">
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn btn-primary" onclick="findRecommendations()">
+                            🔍 Find Systems
+                        </button>
+                        <button class="btn btn-success" onclick="saveConfiguration()">
+                            💾 Save Config
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSelection()">
+                            🗑️ Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="panel results">
+                <h2>✨ Recommendations</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('recommendations')">🎯 Recommendations</button>
+                    <button class="tab" onclick="switchTab('components')">🔧 Components</button>
+                </div>
+
+                <div id="recommendations-tab" class="tab-content active">
+                    <div id="recommendationResults">
+                        <p style="color: #64748b; text-align: center; padding: 2rem;">
+                            Set your requirements and click "Find Systems" to see suitable systems, or manually select
+                            systems from the list above.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="components-tab" class="tab-content">
+                    <div id="componentsResults">
+                        <p style="color: #64748b; text-align: center; padding: 2rem;">
+                            Select systems to view their detailed components and specifications.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔧 Your Supabase credentials - these are correct for your setup
+        const SUPABASE_URL = 'https://vpgawhkvfibhzafkdcsa.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwZ2F3aGt2ZmliaHphZmtkY3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3Nzk0NjAsImV4cCI6MjA2OTM1NTQ2MH0.QjGdS6_Y4Dkud1E2wGBI11UE1UXljvMW5v0FQm1tJmc';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let allSystems = [];
+        let selectedSystems = [];
+
+        // Load systems on page load
+        document.addEventListener('DOMContentLoaded', loadSystems);
+
+        async function loadSystems() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('conveyor_systems')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('chain_width_mm');
+
+                if (error) throw error;
+
+                allSystems = data;
+                displaySystems(allSystems);
+                updateStats();
+
+            } catch (error) {
+                console.error('Error loading systems:', error);
+                document.getElementById('systemsList').innerHTML =
+                    '<div class="error">❌ Error loading systems. Please check your connection and make sure you\'ve run the database schema.</div>';
+            }
+        }
+
+        function displaySystems(systems) {
+            const container = document.getElementById('systemsList');
+
+            if (systems.length === 0) {
+                container.innerHTML = '<div class="loading">No systems found</div>';
+                return;
+            }
+
+            container.innerHTML = systems.map(system => `
+                <div class="system-card" onclick="toggleSystem('${system.code}')" id="system-${system.code}">
+                    <div class="system-code">${system.code}</div>
+                    <div class="system-name">${system.name}</div>
+                    <div class="system-specs">
+                        <span class="spec-item">${system.chain_width_mm}mm</span>
+                        <span class="spec-item">${system.max_load_per_link_kg}kg max</span>
+                        <span class="spec-item">${system.applications ? system.applications.length + ' apps' : 'No apps'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSystem(systemCode) {
+            const element = document.getElementById(`system-${systemCode}`);
+
+            if (selectedSystems.includes(systemCode)) {
+                selectedSystems = selectedSystems.filter(code => code !== systemCode);
+                element.classList.remove('selected');
+            } else {
+                selectedSystems.push(systemCode);
+                element.classList.add('selected');
+            }
+
+            updateStats();
+            updateRecommendations();
+            updateComponentsTable();
+        }
+
+        function updateStats() {
+            document.getElementById('totalSystems').textContent = allSystems.length;
+            document.getElementById('selectedCount').textContent = selectedSystems.length;
+
+            // Calculate compatible systems (simplified)
+            let compatibleCount = 0;
+            if (selectedSystems.length > 0) {
+                const selectedSystem = allSystems.find(s => s.code === selectedSystems[0]);
+                if (selectedSystem) {
+                    // Simple compatibility: systems within similar load ranges
+                    compatibleCount = allSystems.filter(s =>
+                        Math.abs(s.max_load_per_link_kg - selectedSystem.max_load_per_link_kg) < 1
+                    ).length;
+                }
+            }
+            document.getElementById('compatibleCount').textContent = compatibleCount || '-';
+        }
+
+        function switchTab(tabName) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Add active class to selected tab and content
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Update content based on tab
+            if (tabName === 'components') {
+                updateComponentsTable();
+            }
+        }
+
+        function updateRecommendations() {
+            const resultsContainer = document.getElementById('recommendationResults');
+
+            if (selectedSystems.length === 0) {
+                resultsContainer.innerHTML = `
+                    <p style="color: #64748b; text-align: center; padding: 2rem;">
+                        Select systems from the list above or use the requirements filter to get recommendations.
+                    </p>
+                `;
+                return;
+            }
+
+            const selectedSystemsData = allSystems.filter(s => selectedSystems.includes(s.code));
+
+            resultsContainer.innerHTML = `
+                <div class="recommendation">
+                    <h3>🎯 Selected Configuration</h3>
+                    ${selectedSystemsData.map(system => `
+                        <div class="rec-system">
+                            <h4>${system.code}: ${system.name}</h4>
+                            <p><strong>Chain Width:</strong> ${system.chain_width_mm}mm | <strong>Max Load:</strong> ${system.max_load_per_link_kg}kg</p>
+                            <p><strong>Applications:</strong> ${system.applications ? system.applications.slice(0, 3).join(', ') : 'N/A'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function updateComponentsTable() {
+            const componentsContainer = document.getElementById('componentsResults');
+
+            if (selectedSystems.length === 0) {
+                componentsContainer.innerHTML = `
+                    <p style="color: #64748b; text-align: center; padding: 2rem;">
+                        Select systems from the list above to view their detailed components and specifications.
+                    </p>
+                `;
+                return;
+            }
+
+            const selectedSystemsData = allSystems.filter(s => selectedSystems.includes(s.code));
+
+            // Generate components data for each selected system
+            const allComponents = [];
+
+            selectedSystemsData.forEach(system => {
+                // Chain components
+                allComponents.push({
+                    system: system.code,
+                    systemName: system.name,
+                    componentType: 'Chain',
+                    componentName: `${system.code} Chain`,
+                    specifications: {
+                        'Chain Width': `${system.chain_width_mm}mm`,
+                        'Max Load': `${system.max_load_per_link_kg}kg per link`,
+                        'Material': 'Steel',
+                        'Pitch': getChainPitch(system.chain_width_mm)
+                    },
+                    description: `Main conveyor chain for ${system.name} system`
+                });
+
+                // Sprockets
+                allComponents.push({
+                    system: system.code,
+                    systemName: system.name,
+                    componentType: 'Sprockets',
+                    componentName: `${system.code} Drive Sprocket`,
+                    specifications: {
+                        'Teeth Count': getSprocketTeeth(system.chain_width_mm),
+                        'Bore Size': getBoreSize(system.chain_width_mm),
+                        'Material': 'Steel',
+                        'Type': 'Drive'
+                    },
+                    description: `Drive sprocket for ${system.name} system`
+                });
+
+                allComponents.push({
+                    system: system.code,
+                    systemName: system.name,
+                    componentType: 'Sprockets',
+                    componentName: `${system.code} Idler Sprocket`,
+                    specifications: {
+                        'Teeth Count': getSprocketTeeth(system.chain_width_mm),
+                        'Bore Size': getBoreSize(system.chain_width_mm),
+                        'Material': 'Steel',
+                        'Type': 'Idler'
+                    },
+                    description: `Idler sprocket for ${system.name} system`
+                });
+
+                // Bearings
+                allComponents.push({
+                    system: system.code,
+                    systemName: system.name,
+                    componentType: 'Bearings',
+                    componentName: `${system.code} Chain Bearings`,
+                    specifications: {
+                        'Type': 'Roller Bearings',
+                        'Load Rating': `${system.max_load_per_link_kg * 2}kg`,
+                        'Material': 'Steel',
+                        'Seals': 'Double Lip'
+                    },
+                    description: `Chain roller bearings for ${system.name} system`
+                });
+
+                // Tracks/Guides
+                allComponents.push({
+                    system: system.code,
+                    systemName: system.name,
+                    componentType: 'Tracks',
+                    componentName: `${system.code} Track System`,
+                    specifications: {
+                        'Track Width': `${system.chain_width_mm + 10}mm`,
+                        'Material': 'Aluminum',
+                        'Profile': 'Standard',
+                        'Length': 'Custom'
+                    },
+                    description: `Track system for ${system.name} conveyor`
+                });
+
+                // Motors/Drives
+                allComponents.push({
+                    system: system.code,
+                    systemName: system.name,
+                    componentType: 'Drives',
+                    componentName: `${system.code} Motor Drive`,
+                    specifications: {
+                        'Power': getMotorPower(system.max_load_per_link_kg),
+                        'Speed': 'Variable',
+                        'Type': 'AC Motor',
+                        'Control': 'VFD Compatible'
+                    },
+                    description: `Motor drive unit for ${system.name} system`
+                });
+            });
+
+            // Generate table HTML
+            const tableHTML = `
+                <div style="overflow-x: auto;">
+                    <table class="components-table">
+                        <thead>
+                            <tr>
+                                <th>System</th>
+                                <th>Component Type</th>
+                                <th>Component Name</th>
+                                <th>Specifications</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allComponents.map(component => `
+                                <tr>
+                                    <td>
+                                        <div class="component-type">${component.system}</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">${component.systemName}</div>
+                                    </td>
+                                    <td>
+                                        <span class="component-type">${component.componentType}</span>
+                                    </td>
+                                    <td>
+                                        <strong>${component.componentName}</strong>
+                                    </td>
+                                    <td>
+                                        <div class="component-specs">
+                                            ${Object.entries(component.specifications).map(([key, value]) =>
+                `<span class="component-spec"><strong>${key}:</strong> ${value}</span>`
+            ).join('')}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        ${component.description}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            componentsContainer.innerHTML = tableHTML;
+        }
+
+        // Helper functions for component specifications
+        function getChainPitch(chainWidth) {
+            const pitchMap = {
+                43: '12.7mm',
+                44: '12.7mm',
+                63: '19.05mm',
+                83: '25.4mm',
+                103: '31.75mm',
+                175: '50.8mm',
+                295: '76.2mm'
+            };
+            return pitchMap[chainWidth] || 'Custom';
+        }
+
+        function getSprocketTeeth(chainWidth) {
+            const teethMap = {
+                43: '12-24',
+                44: '12-24',
+                63: '10-20',
+                83: '8-16',
+                103: '6-12',
+                175: '4-8',
+                295: '3-6'
+            };
+            return teethMap[chainWidth] || 'Custom';
+        }
+
+        function getBoreSize(chainWidth) {
+            const boreMap = {
+                43: '20-40mm',
+                44: '20-40mm',
+                63: '25-50mm',
+                83: '30-60mm',
+                103: '40-80mm',
+                175: '60-120mm',
+                295: '80-150mm'
+            };
+            return boreMap[chainWidth] || 'Custom';
+        }
+
+        function getMotorPower(maxLoad) {
+            if (maxLoad <= 2) return '0.37-0.75kW';
+            if (maxLoad <= 5) return '0.75-1.5kW';
+            if (maxLoad <= 10) return '1.5-3kW';
+            if (maxLoad <= 20) return '3-5.5kW';
+            return '5.5-11kW';
+        }
+
+        async function findRecommendations() {
+            const maxLoad = parseFloat(document.getElementById('maxLoad').value) || null;
+            const chainWidth = document.getElementById('chainWidth').value || null;
+            const application = document.getElementById('application').value || null;
+
+            try {
+                let query = supabaseClient.from('conveyor_systems').select('*').eq('is_active', true);
+
+                // Apply filters
+                if (maxLoad !== null) {
+                    query = query.lte('max_load_per_link_kg', maxLoad);
+                }
+
+                if (chainWidth) {
+                    query = query.eq('chain_width_mm', parseInt(chainWidth));
+                }
+
+                const { data, error } = await query;
+                if (error) throw error;
+
+                let filteredSystems = data;
+
+                // Filter by application (client-side keyword matching)
+                if (application && filteredSystems.length > 0) {
+                    const appKeywords = {
+                        'small_parts': ['small', 'bearing', 'component'],
+                        'bottles': ['bottle', 'container', 'pharmaceutical'],
+                        'boxes': ['box', 'cardboard', 'packaging'],
+                        'automotive': ['automotive', 'motor', 'parts'],
+                        'food': ['food', 'hygiene', 'detergent'],
+                        'electronics': ['electronic', 'receiver', 'computer']
+                    };
+
+                    const keywords = appKeywords[application] || [application];
+                    filteredSystems = filteredSystems.filter(system => {
+                        if (!system.applications) return false;
+                        const appsText = system.applications.join(' ').toLowerCase();
+                        return keywords.some(keyword => appsText.includes(keyword));
+                    });
+                }
+
+                // Display filtered results
+                displaySystems(filteredSystems);
+
+                // Show recommendation message
+                const resultsContainer = document.getElementById('recommendationResults');
+                if (filteredSystems.length > 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="recommendation">
+                            <h3>🎯 Found ${filteredSystems.length} Matching Systems</h3>
+                            <p>The systems shown above match your requirements. Click on any system to add it to your configuration.</p>
+                        </div>
+                    `;
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="error">
+                            ❌ No systems match your requirements. Try adjusting your filters.
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error finding recommendations:', error);
+                document.getElementById('recommendationResults').innerHTML =
+                    '<div class="error">❌ Error finding recommendations. Please try again.</div>';
+            }
+        }
+
+        async function saveConfiguration() {
+            const configName = document.getElementById('configName').value.trim();
+
+            if (!configName) {
+                alert('⚠️ Please enter a configuration name');
+                return;
+            }
+
+            if (selectedSystems.length === 0) {
+                alert('⚠️ Please select at least one system');
+                return;
+            }
+
+            const requirements = {
+                max_load: parseFloat(document.getElementById('maxLoad').value) || null,
+                chain_width: document.getElementById('chainWidth').value || null,
+                application: document.getElementById('application').value || null,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('user_configurations')
+                    .insert({
+                        name: configName,
+                        selected_systems: selectedSystems,
+                        requirements: requirements
+                    });
+
+                if (error) throw error;
+
+                document.getElementById('recommendationResults').innerHTML = `
+                    <div class="success">
+                        ✅ Configuration "${configName}" saved successfully!
+                    </div>
+                `;
+
+                // Clear the name field
+                document.getElementById('configName').value = '';
+
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+                alert('❌ Error saving configuration. Please try again.');
+            }
+        }
+
+        function clearSelection() {
+            // Clear selected systems
+            selectedSystems = [];
+
+            // Remove visual selection
+            document.querySelectorAll('.system-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Clear form fields
+            document.getElementById('maxLoad').value = '';
+            document.getElementById('chainWidth').value = '';
+            document.getElementById('application').value = '';
+            document.getElementById('configName').value = '';
+
+            // Reset systems display
+            displaySystems(allSystems);
+
+            // Update stats and recommendations
+            updateStats();
+            updateRecommendations();
+            updateComponentsTable();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'f':
+                        e.preventDefault();
+                        findRecommendations();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        saveConfiguration();
+                        break;
+                    case 'Backspace':
+                        e.preventDefault();
+                        clearSelection();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
