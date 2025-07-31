@@ -374,6 +374,123 @@
             border-radius: 12px;
             font-size: 0.8rem;
             color: #475569;
+            margin: 0.1rem;
+            display: inline-block;
+        }
+
+        .component-summary {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .component-summary h4 {
+            color: #166534;
+            margin-bottom: 0.5rem;
+        }
+
+        .component-summary p {
+            margin: 0.25rem 0;
+            color: #374151;
+        }
+
+        .component-filters {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .component-filters .form-group {
+            margin-bottom: 0;
+        }
+
+        .component-filters label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .component-filters select {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0.5rem;
+            background: white;
+            font-size: 0.875rem;
+        }
+
+        .component-filters .btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+
+        .component-filters .btn:hover {
+            background: #4f46e5;
+        }
+
+        .recommendation-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .recommendation-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendation-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-stat {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .recommendation-stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #166534;
+        }
+
+        .compatibility-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .selected-badge {
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .stats {
@@ -523,6 +640,33 @@
                 </div>
 
                 <div id="components-tab" class="tab-content">
+                    <div class="component-filters">
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <div class="form-group">
+                                <label for="componentTypeFilter">Filter by Type:</label>
+                                <select id="componentTypeFilter" onchange="filterComponents()">
+                                    <option value="">All Types</option>
+                                    <option value="chain">Chain</option>
+                                    <option value="drive_unit">Drive Unit</option>
+                                    <option value="sprocket">Sprocket</option>
+                                    <option value="bearing">Bearing</option>
+                                    <option value="track">Track</option>
+                                    <option value="accessory">Accessory</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="componentSort">Sort by:</label>
+                                <select id="componentSort" onchange="filterComponents()">
+                                    <option value="component_type">Component Type</option>
+                                    <option value="name">Name</option>
+                                    <option value="system_code">System Code</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="exportComponents()">
+                                📄 Export
+                            </button>
+                        </div>
+                    </div>
                     <div id="componentsResults">
                         <p style="color: #64748b; text-align: center; padding: 2rem;">
                             Select systems to view their detailed components and specifications.
@@ -550,10 +694,9 @@
         async function loadSystems() {
             try {
                 const { data, error } = await supabaseClient
-                    .from('conveyor_systems')
+                    .from('systems')
                     .select('*')
-                    .eq('is_active', true)
-                    .order('chain_width_mm');
+                    .order('system_code');
 
                 if (error) throw error;
 
@@ -577,12 +720,12 @@
             }
 
             container.innerHTML = systems.map(system => `
-                <div class="system-card" onclick="toggleSystem('${system.code}')" id="system-${system.code}">
-                    <div class="system-code">${system.code}</div>
-                    <div class="system-name">${system.name}</div>
+                <div class="system-card" onclick="toggleSystem('${system.system_code}')" id="system-${system.system_code}">
+                    <div class="system-code">${system.system_code}</div>
+                    <div class="system-name">${system.system_name}</div>
                     <div class="system-specs">
-                        <span class="spec-item">${system.chain_width_mm}mm</span>
-                        <span class="spec-item">${system.max_load_per_link_kg}kg max</span>
+                        <span class="spec-item">${system.chain_width || 'N/A'}</span>
+                        <span class="spec-item">${system.max_load || 'N/A'}</span>
                         <span class="spec-item">${system.applications ? system.applications.length + ' apps' : 'No apps'}</span>
                     </div>
                 </div>
@@ -616,7 +759,7 @@
                 if (selectedSystem) {
                     // Simple compatibility: systems within similar load ranges
                     compatibleCount = allSystems.filter(s =>
-                        Math.abs(s.max_load_per_link_kg - selectedSystem.max_load_per_link_kg) < 1
+                        s.max_load === selectedSystem.max_load
                     ).length;
                 }
             }
@@ -650,23 +793,96 @@
                 return;
             }
 
-            const selectedSystemsData = allSystems.filter(s => selectedSystems.includes(s.code));
+            const selectedSystemsData = allSystems.filter(s => selectedSystems.includes(s.system_code));
+
+            // Advanced compatibility analysis
+            const analysis = analyzeSystemCompatibility(selectedSystemsData, allSystems);
 
             resultsContainer.innerHTML = `
-                <div class="recommendation">
-                    <h3>🎯 Selected Configuration</h3>
-                    ${selectedSystemsData.map(system => `
-                        <div class="rec-system">
-                            <h4>${system.code}: ${system.name}</h4>
-                            <p><strong>Chain Width:</strong> ${system.chain_width_mm}mm | <strong>Max Load:</strong> ${system.max_load_per_link_kg}kg</p>
-                            <p><strong>Applications:</strong> ${system.applications ? system.applications.slice(0, 3).join(', ') : 'N/A'}</p>
+                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: #166534; margin-bottom: 1rem;">🎯 System Analysis & Recommendations</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                        <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                            <strong>Selected Systems</strong><br>
+                            <span style="font-size: 1.5rem; color: #166534;">${selectedSystems.length}</span>
                         </div>
-                    `).join('')}
+                        <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔗</div>
+                            <strong>Compatible Systems</strong><br>
+                            <span style="font-size: 1.5rem; color: #166534;">${analysis.compatibleCount}</span>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+                            <strong>Performance Score</strong><br>
+                            <span style="font-size: 1.5rem; color: #166534;">${analysis.performanceScore}%</span>
+                        </div>
+                    </div>
+                    <p><strong>Recommendation:</strong> ${analysis.recommendation}</p>
+                </div>
+
+                <div style="display: grid; gap: 1.5rem;">
+                    <div>
+                        <h4 style="color: #374151; margin-bottom: 1rem;">📋 Selected Systems Analysis</h4>
+                        ${selectedSystemsData.map(system => `
+                            <div class="rec-system" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                    <h5 style="color: #1f2937; margin: 0;">${system.system_code}: ${system.system_name}</h5>
+                                    <span style="background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Selected</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <div><strong>Chain Width:</strong> ${system.chain_width || 'N/A'}</div>
+                                    <div><strong>Max Load:</strong> ${system.max_load || 'N/A'}</div>
+                                    <div><strong>Speed Range:</strong> ${system.speed_range || 'N/A'}</div>
+                                    <div><strong>Precision:</strong> ${system.precision_level || 'N/A'}</div>
+                                </div>
+                                <div style="margin-bottom: 0.5rem;">
+                                    <strong>Applications:</strong> ${system.applications ? system.applications.slice(0, 3).join(', ') : 'N/A'}
+                                </div>
+                                <div style="font-size: 0.875rem; color: #6b7280;">
+                                    <strong>Key Features:</strong> ${system.key_features ? system.key_features.slice(0, 2).join(', ') : 'N/A'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    ${analysis.compatibleSystems.length > 0 ? `
+                        <div>
+                            <h4 style="color: #374151; margin-bottom: 1rem;">🔗 Compatible Systems</h4>
+                            <div style="display: grid; gap: 1rem;">
+                                ${analysis.compatibleSystems.map(system => `
+                                    <div class="rec-system" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                            <h5 style="color: #1f2937; margin: 0;">${system.system_code}: ${system.system_name}</h5>
+                                            <span style="background: #3b82f6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Compatible</span>
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 0.5rem;">
+                                            <div><strong>Chain Width:</strong> ${system.chain_width || 'N/A'}</div>
+                                            <div><strong>Max Load:</strong> ${system.max_load || 'N/A'}</div>
+                                            <div><strong>Compatibility Score:</strong> ${system.compatibilityScore}%</div>
+                                        </div>
+                                        <div style="font-size: 0.875rem; color: #6b7280;">
+                                            <strong>Why Compatible:</strong> ${system.compatibilityReason}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div>
+                        <h4 style="color: #374151; margin-bottom: 1rem;">💡 Optimization Suggestions</h4>
+                        <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem;">
+                            <ul style="margin: 0; padding-left: 1.5rem;">
+                                ${analysis.suggestions.map(suggestion => `<li style="margin-bottom: 0.5rem;">${suggestion}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             `;
         }
 
-        function updateComponentsTable() {
+        async function updateComponentsTable() {
             const componentsContainer = document.getElementById('componentsResults');
 
             if (selectedSystems.length === 0) {
@@ -678,194 +894,101 @@
                 return;
             }
 
-            const selectedSystemsData = allSystems.filter(s => selectedSystems.includes(s.code));
-
-            // Generate components data for each selected system
-            const allComponents = [];
-
-            selectedSystemsData.forEach(system => {
-                // Chain components
-                allComponents.push({
-                    system: system.code,
-                    systemName: system.name,
-                    componentType: 'Chain',
-                    componentName: `${system.code} Chain`,
-                    specifications: {
-                        'Chain Width': `${system.chain_width_mm}mm`,
-                        'Max Load': `${system.max_load_per_link_kg}kg per link`,
-                        'Material': 'Steel',
-                        'Pitch': getChainPitch(system.chain_width_mm)
-                    },
-                    description: `Main conveyor chain for ${system.name} system`
-                });
-
-                // Sprockets
-                allComponents.push({
-                    system: system.code,
-                    systemName: system.name,
-                    componentType: 'Sprockets',
-                    componentName: `${system.code} Drive Sprocket`,
-                    specifications: {
-                        'Teeth Count': getSprocketTeeth(system.chain_width_mm),
-                        'Bore Size': getBoreSize(system.chain_width_mm),
-                        'Material': 'Steel',
-                        'Type': 'Drive'
-                    },
-                    description: `Drive sprocket for ${system.name} system`
-                });
-
-                allComponents.push({
-                    system: system.code,
-                    systemName: system.name,
-                    componentType: 'Sprockets',
-                    componentName: `${system.code} Idler Sprocket`,
-                    specifications: {
-                        'Teeth Count': getSprocketTeeth(system.chain_width_mm),
-                        'Bore Size': getBoreSize(system.chain_width_mm),
-                        'Material': 'Steel',
-                        'Type': 'Idler'
-                    },
-                    description: `Idler sprocket for ${system.name} system`
-                });
-
-                // Bearings
-                allComponents.push({
-                    system: system.code,
-                    systemName: system.name,
-                    componentType: 'Bearings',
-                    componentName: `${system.code} Chain Bearings`,
-                    specifications: {
-                        'Type': 'Roller Bearings',
-                        'Load Rating': `${system.max_load_per_link_kg * 2}kg`,
-                        'Material': 'Steel',
-                        'Seals': 'Double Lip'
-                    },
-                    description: `Chain roller bearings for ${system.name} system`
-                });
-
-                // Tracks/Guides
-                allComponents.push({
-                    system: system.code,
-                    systemName: system.name,
-                    componentType: 'Tracks',
-                    componentName: `${system.code} Track System`,
-                    specifications: {
-                        'Track Width': `${system.chain_width_mm + 10}mm`,
-                        'Material': 'Aluminum',
-                        'Profile': 'Standard',
-                        'Length': 'Custom'
-                    },
-                    description: `Track system for ${system.name} conveyor`
-                });
-
-                // Motors/Drives
-                allComponents.push({
-                    system: system.code,
-                    systemName: system.name,
-                    componentType: 'Drives',
-                    componentName: `${system.code} Motor Drive`,
-                    specifications: {
-                        'Power': getMotorPower(system.max_load_per_link_kg),
-                        'Speed': 'Variable',
-                        'Type': 'AC Motor',
-                        'Control': 'VFD Compatible'
-                    },
-                    description: `Motor drive unit for ${system.name} system`
-                });
-            });
-
-            // Generate table HTML
-            const tableHTML = `
-                <div style="overflow-x: auto;">
-                    <table class="components-table">
-                        <thead>
-                            <tr>
-                                <th>System</th>
-                                <th>Component Type</th>
-                                <th>Component Name</th>
-                                <th>Specifications</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${allComponents.map(component => `
-                                <tr>
-                                    <td>
-                                        <div class="component-type">${component.system}</div>
-                                        <div style="font-size: 0.8rem; color: #64748b;">${component.systemName}</div>
-                                    </td>
-                                    <td>
-                                        <span class="component-type">${component.componentType}</span>
-                                    </td>
-                                    <td>
-                                        <strong>${component.componentName}</strong>
-                                    </td>
-                                    <td>
-                                        <div class="component-specs">
-                                            ${Object.entries(component.specifications).map(([key, value]) =>
-                `<span class="component-spec"><strong>${key}:</strong> ${value}</span>`
-            ).join('')}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        ${component.description}
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+            // Show loading state
+            componentsContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #64748b;">
+                    <div style="font-size: 2em;">🔄</div>
+                    <p>Loading components for selected systems...</p>
                 </div>
             `;
 
-            componentsContainer.innerHTML = tableHTML;
+            try {
+                // Load components for selected systems from the database
+                const { data: components, error } = await supabaseClient
+                    .from('components')
+                    .select('*')
+                    .in('system_code', selectedSystems)
+                    .order('component_type');
+
+                if (error) throw error;
+
+                if (!components || components.length === 0) {
+                    componentsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #64748b;">
+                            <p>No components found for selected systems.</p>
+                            <p>Try selecting different systems or check the database.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Store components globally for filtering
+                allComponents = components;
+
+                // Display components with current filters
+                displayComponents(components);
+
+            } catch (error) {
+                console.error('Error loading components:', error);
+                componentsContainer.innerHTML = `
+                    <div class="error">
+                        ❌ Error loading components from database. Please try again.
+                        <br><small>Error: ${error.message}</small>
+                    </div>
+                `;
+            }
         }
 
         // Helper functions for component specifications
         function getChainPitch(chainWidth) {
-            const pitchMap = {
-                43: '12.7mm',
-                44: '12.7mm',
-                63: '19.05mm',
-                83: '25.4mm',
-                103: '31.75mm',
-                175: '50.8mm',
-                295: '76.2mm'
-            };
-            return pitchMap[chainWidth] || 'Custom';
+            if (!chainWidth) return 'N/A';
+            // Extract numeric value from string like "50-150 mm"
+            const match = chainWidth.match(/(\d+)/);
+            if (match) {
+                const width = parseInt(match[1]);
+                if (width <= 50) return '12.7mm';
+                if (width <= 100) return '19.05mm';
+                if (width <= 150) return '25.4mm';
+                if (width <= 200) return '31.75mm';
+                return 'Custom';
+            }
+            return 'Custom';
         }
 
         function getSprocketTeeth(chainWidth) {
-            const teethMap = {
-                43: '12-24',
-                44: '12-24',
-                63: '10-20',
-                83: '8-16',
-                103: '6-12',
-                175: '4-8',
-                295: '3-6'
-            };
-            return teethMap[chainWidth] || 'Custom';
+            if (!chainWidth) return 'N/A';
+            const match = chainWidth.match(/(\d+)/);
+            if (match) {
+                const width = parseInt(match[1]);
+                if (width <= 50) return '12-24';
+                if (width <= 100) return '10-20';
+                if (width <= 150) return '8-16';
+                if (width <= 200) return '6-12';
+                return 'Custom';
+            }
+            return 'Custom';
         }
 
         function getBoreSize(chainWidth) {
-            const boreMap = {
-                43: '20-40mm',
-                44: '20-40mm',
-                63: '25-50mm',
-                83: '30-60mm',
-                103: '40-80mm',
-                175: '60-120mm',
-                295: '80-150mm'
-            };
-            return boreMap[chainWidth] || 'Custom';
+            if (!chainWidth) return 'N/A';
+            const match = chainWidth.match(/(\d+)/);
+            if (match) {
+                const width = parseInt(match[1]);
+                if (width <= 50) return '20-40mm';
+                if (width <= 100) return '25-50mm';
+                if (width <= 150) return '30-60mm';
+                if (width <= 200) return '40-80mm';
+                return 'Custom';
+            }
+            return 'Custom';
         }
 
         function getMotorPower(maxLoad) {
-            if (maxLoad <= 2) return '0.37-0.75kW';
-            if (maxLoad <= 5) return '0.75-1.5kW';
-            if (maxLoad <= 10) return '1.5-3kW';
-            if (maxLoad <= 20) return '3-5.5kW';
-            return '5.5-11kW';
+            if (!maxLoad) return 'N/A';
+            if (maxLoad.includes('Light') || maxLoad.includes('Very light')) return '0.37-0.75kW';
+            if (maxLoad.includes('Medium')) return '0.75-1.5kW';
+            if (maxLoad.includes('Heavy')) return '1.5-3kW';
+            return '0.75-1.5kW';
         }
 
         async function findRecommendations() {
@@ -874,15 +997,17 @@
             const application = document.getElementById('application').value || null;
 
             try {
-                let query = supabaseClient.from('conveyor_systems').select('*').eq('is_active', true);
+                let query = supabaseClient.from('systems').select('*');
 
                 // Apply filters
                 if (maxLoad !== null) {
-                    query = query.lte('max_load_per_link_kg', maxLoad);
+                    // Filter by load capacity (text-based filtering)
+                    query = query.ilike('max_load', `%${maxLoad}%`);
                 }
 
                 if (chainWidth) {
-                    query = query.eq('chain_width_mm', parseInt(chainWidth));
+                    // Filter by chain width range (e.g., "50-150 mm" contains the selected width)
+                    query = query.ilike('chain_width', `%${chainWidth}%`);
                 }
 
                 const { data, error } = await query;
@@ -1004,6 +1129,269 @@
             updateStats();
             updateRecommendations();
             updateComponentsTable();
+        }
+
+        // Component filtering and export functions
+        let allComponents = [];
+
+        function filterComponents() {
+            const typeFilter = document.getElementById('componentTypeFilter').value;
+            const sortBy = document.getElementById('componentSort').value;
+
+            let filteredComponents = allComponents;
+
+            // Apply type filter
+            if (typeFilter) {
+                filteredComponents = filteredComponents.filter(comp =>
+                    comp.component_type === typeFilter
+                );
+            }
+
+            // Apply sorting
+            filteredComponents.sort((a, b) => {
+                const aVal = a[sortBy] || '';
+                const bVal = b[sortBy] || '';
+                return aVal.localeCompare(bVal);
+            });
+
+            displayComponents(filteredComponents);
+        }
+
+        function displayComponents(components) {
+            const componentsContainer = document.getElementById('componentsResults');
+
+            if (!components || components.length === 0) {
+                componentsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <p>No components found matching the current filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Generate summary
+            const componentTypes = [...new Set(components.map(c => c.component_type))];
+            const summaryHTML = `
+                <div class="component-summary">
+                    <h4>📊 Component Summary</h4>
+                    <p><strong>Total Components:</strong> ${components.length}</p>
+                    <p><strong>Component Types:</strong> ${componentTypes.join(', ')}</p>
+                    <p><strong>Selected Systems:</strong> ${selectedSystems.join(', ')}</p>
+                </div>
+            `;
+
+            // Generate table HTML
+            const tableHTML = `
+                ${summaryHTML}
+                <div style="overflow-x: auto;">
+                    <table class="components-table">
+                        <thead>
+                            <tr>
+                                <th>System</th>
+                                <th>Component Type</th>
+                                <th>Component Name</th>
+                                <th>Specifications</th>
+                                <th>Compatibility</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${components.map(component => `
+                                <tr>
+                                    <td>
+                                        <div class="component-type">${component.system_code}</div>
+                                    </td>
+                                    <td>
+                                        <span class="component-type">${component.component_type || 'N/A'}</span>
+                                    </td>
+                                    <td>
+                                        <strong>${component.name || 'N/A'}</strong>
+                                    </td>
+                                    <td>
+                                        <div class="component-specs">
+                                            ${component.specifications ?
+                    Object.entries(component.specifications).map(([key, value]) =>
+                        `<span class="component-spec"><strong>${key}:</strong> ${value}</span>`
+                    ).join('') :
+                    '<span class="component-spec">No specifications</span>'
+                }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="component-spec">${component.compatibility || 'N/A'}</span>
+                                    </td>
+                                    <td>
+                                        ${component.description || 'No description available'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            componentsContainer.innerHTML = tableHTML;
+        }
+
+        function exportComponents() {
+            if (!allComponents || allComponents.length === 0) {
+                alert('No components to export. Please select systems first.');
+                return;
+            }
+
+            // Create CSV content
+            const headers = ['System Code', 'Component Type', 'Name', 'Compatibility', 'Description'];
+            const csvContent = [
+                headers.join(','),
+                ...allComponents.map(comp => [
+                    comp.system_code || '',
+                    comp.component_type || '',
+                    `"${(comp.name || '').replace(/"/g, '""')}"`,
+                    comp.compatibility || '',
+                    `"${(comp.description || '').replace(/"/g, '""')}"`
+                ].join(','))
+            ].join('\n');
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flexlink_components_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function analyzeSystemCompatibility(selectedSystems, allSystems) {
+            const analysis = {
+                compatibleCount: 0,
+                performanceScore: 0,
+                recommendation: '',
+                compatibleSystems: [],
+                suggestions: []
+            };
+
+            if (selectedSystems.length === 0) {
+                analysis.recommendation = 'Please select systems to get recommendations.';
+                return analysis;
+            }
+
+            // Calculate average characteristics of selected systems
+            const avgLoad = selectedSystems.reduce((sum, sys) => {
+                const load = sys.max_load || '';
+                if (load.includes('Light')) return sum + 1;
+                if (load.includes('Medium')) return sum + 2;
+                if (load.includes('Heavy')) return sum + 3;
+                return sum + 1;
+            }, 0) / selectedSystems.length;
+
+            const avgSpeed = selectedSystems.reduce((sum, sys) => {
+                const speed = sys.speed_range || '';
+                const match = speed.match(/(\d+)/);
+                return sum + (match ? parseInt(match[1]) : 20);
+            }, 0) / selectedSystems.length;
+
+            // Find compatible systems
+            const compatibleSystems = allSystems.filter(system => {
+                if (selectedSystems.some(selected => selected.system_code === system.system_code)) {
+                    return false; // Don't include already selected systems
+                }
+
+                let compatibilityScore = 0;
+                let reasons = [];
+
+                // Load compatibility
+                const systemLoad = system.max_load || '';
+                if (systemLoad.includes('Light') && avgLoad <= 1.5) {
+                    compatibilityScore += 30;
+                    reasons.push('Similar load capacity');
+                } else if (systemLoad.includes('Medium') && avgLoad >= 1.5 && avgLoad <= 2.5) {
+                    compatibilityScore += 30;
+                    reasons.push('Similar load capacity');
+                } else if (systemLoad.includes('Heavy') && avgLoad >= 2.5) {
+                    compatibilityScore += 30;
+                    reasons.push('Similar load capacity');
+                }
+
+                // Speed compatibility
+                const systemSpeed = system.speed_range || '';
+                const speedMatch = systemSpeed.match(/(\d+)/);
+                const systemSpeedValue = speedMatch ? parseInt(speedMatch[1]) : 20;
+                if (Math.abs(systemSpeedValue - avgSpeed) <= 10) {
+                    compatibilityScore += 25;
+                    reasons.push('Similar speed range');
+                }
+
+                // Application overlap
+                const selectedApps = selectedSystems.flatMap(s => s.applications || []);
+                const systemApps = system.applications || [];
+                const commonApps = selectedApps.filter(app => systemApps.includes(app));
+                if (commonApps.length > 0) {
+                    compatibilityScore += 25;
+                    reasons.push(`Shared applications: ${commonApps.slice(0, 2).join(', ')}`);
+                }
+
+                // Category compatibility
+                const selectedCategories = selectedSystems.map(s => s.category);
+                if (selectedCategories.includes(system.category)) {
+                    compatibilityScore += 20;
+                    reasons.push('Same category');
+                }
+
+                if (compatibilityScore >= 50) {
+                    system.compatibilityScore = compatibilityScore;
+                    system.compatibilityReason = reasons.join('; ');
+                    return true;
+                }
+
+                return false;
+            });
+
+            analysis.compatibleCount = compatibleSystems.length;
+            analysis.compatibleSystems = compatibleSystems.slice(0, 5); // Show top 5
+
+            // Calculate performance score
+            const loadDiversity = new Set(selectedSystems.map(s => s.max_load)).size;
+            const speedDiversity = new Set(selectedSystems.map(s => s.speed_range)).size;
+            const categoryDiversity = new Set(selectedSystems.map(s => s.category)).size;
+
+            analysis.performanceScore = Math.min(100,
+                50 + // Base score
+                (loadDiversity * 10) + // Bonus for load diversity
+                (speedDiversity * 10) + // Bonus for speed diversity
+                (categoryDiversity * 15) + // Bonus for category diversity
+                (compatibleSystems.length * 2) // Bonus for compatibility
+            );
+
+            // Generate recommendations
+            if (selectedSystems.length === 1) {
+                analysis.recommendation = `Single system selected. Consider adding compatible systems for better coverage.`;
+            } else if (loadDiversity === 1) {
+                analysis.recommendation = `All systems have similar load capacity. Consider mixing light, medium, and heavy-duty systems for flexibility.`;
+            } else if (categoryDiversity === 1) {
+                analysis.recommendation = `All systems are from the same category. Consider diversifying across different conveyor types.`;
+            } else {
+                analysis.recommendation = `Good system diversity! Your selection provides a balanced mix of capabilities.`;
+            }
+
+            // Generate suggestions
+            if (selectedSystems.length < 3) {
+                analysis.suggestions.push('Consider adding more systems for better coverage of different applications.');
+            }
+            if (loadDiversity === 1) {
+                analysis.suggestions.push('Add systems with different load capacities to handle various product weights.');
+            }
+            if (categoryDiversity === 1) {
+                analysis.suggestions.push('Consider systems from different categories (chain, belt, modular) for versatility.');
+            }
+            if (compatibleSystems.length > 0) {
+                analysis.suggestions.push(`Found ${compatibleSystems.length} compatible systems that could enhance your configuration.`);
+            }
+            if (selectedSystems.some(s => s.precision_level === 'High')) {
+                analysis.suggestions.push('High precision systems selected - ensure proper maintenance for optimal performance.');
+            }
+
+            return analysis;
         }
 
         // Keyboard shortcuts
