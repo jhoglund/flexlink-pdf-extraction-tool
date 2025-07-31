@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexLink Image Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .stats-section {
+            padding: 20px 30px;
+            background: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .images-section {
+            padding: 30px;
+        }
+
+        .images-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .images-count {
+            font-size: 1.1em;
+            color: #6c757d;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+
+        @media (min-width: 768px) {
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 30px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 35px;
+            }
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #f0f0f0;
+            position: relative;
+        }
+
+        .image-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .image-card:active {
+            transform: translateY(-4px);
+        }
+
+        .image-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #6c757d;
+            border-radius: 8px;
+            margin: 10px;
+        }
+
+        .image-placeholder>div {
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .image-container {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover .image-container img {
+            transform: scale(1.05);
+        }
+
+        .image-info {
+            padding: 20px;
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+        }
+
+        .image-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .image-details {
+            font-size: 0.9em;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .product-code {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+            margin: 4px 6px 4px 0;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        .component-type {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+            margin: 4px 6px 4px 0;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 FlexLink Image Viewer</h1>
+            <p>Browse blueprint drawings with product associations</p>
+        </div>
+
+        <div class="search-section">
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="productCode">Product Code</label>
+                    <input type="text" id="productCode" placeholder="e.g., X45, X65, XS">
+                </div>
+                <div class="form-group">
+                    <label for="componentType">Component Type</label>
+                    <select id="componentType">
+                        <option value="">All Components</option>
+                        <option value="chain">Chain</option>
+                        <option value="sprocket">Sprocket</option>
+                        <option value="motor">Motor</option>
+                        <option value="drive">Drive</option>
+                        <option value="gear">Gear</option>
+                        <option value="wheel">Wheel</option>
+                        <option value="roller">Roller</option>
+                        <option value="guide">Guide</option>
+                        <option value="plate">Plate</option>
+                        <option value="bracket">Bracket</option>
+                        <option value="support">Support</option>
+                        <option value="track">Track</option>
+                        <option value="link">Link</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="blueprintOnly">Blueprint Only</label>
+                    <select id="blueprintOnly">
+                        <option value="">All Images</option>
+                        <option value="true">Blueprint Only</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn">🔍 Search Images</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary" onclick="loadStats()">📊 Show Stats</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="stats-section" id="statsSection" style="display: none;">
+            <h3>📊 Database Statistics</h3>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated here -->
+            </div>
+        </div>
+
+        <div class="images-section">
+            <div class="images-header">
+                <h2>🖼️ Images</h2>
+                <div class="images-count" id="imagesCount">Loading...</div>
+            </div>
+            <div id="imagesContainer">
+                <div class="loading">Loading images...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for image details -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Update these with your Supabase credentials
+        const SUPABASE_URL = 'https://vpgawhkvfibhzafkdcsa.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwZ2F3aGt2ZmliaHphZmtkY3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3Nzk0NjAsImV4cCI6MjA2OTM1NTQ2MH0.QjGdS6_Y4Dkud1E2wGBI11UE1UXljvMW5v0FQm1tJmc';
+
+        let currentImages = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Show loading message
+            document.getElementById('imagesContainer').innerHTML =
+                '<div class="loading">🔄 Loading images from database...</div>';
+
+            loadImages();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('searchForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                searchImages();
+            });
+        }
+
+        async function loadImages() {
+            try {
+                // Load images without image_data to avoid timeout
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,image_hash,page_number,x_coord,y_coord,width,height,image_format,associated_text,product_code,component_type,is_blueprint,image_quality_score,extraction_date,created_at,updated_at&limit=50&order=page_number.asc`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const images = await response.json();
+                currentImages = images;
+                displayImages(images);
+
+                // Show message about pagination
+                if (images.length === 50) {
+                    document.getElementById('imagesContainer').innerHTML +=
+                        '<div style="text-align: center; margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; color: #1976d2;">' +
+                        '<strong>📄 Showing first 50 images</strong><br>' +
+                        'Use search filters to find specific images or browse by product code.' +
+                        '</div>';
+                }
+            } catch (error) {
+                console.error('Error loading images:', error);
+                document.getElementById('imagesContainer').innerHTML =
+                    '<div class="error">Error loading images. Please make sure the database table exists and contains data.</div>';
+            }
+        }
+
+        async function searchImages() {
+            const productCode = document.getElementById('productCode').value;
+            const componentType = document.getElementById('componentType').value;
+            const blueprintOnly = document.getElementById('blueprintOnly').value;
+
+            let url = `${SUPABASE_URL}/rest/v1/product_images?select=id,image_hash,page_number,x_coord,y_coord,width,height,image_format,associated_text,product_code,component_type,is_blueprint,image_quality_score,extraction_date,created_at,updated_at&limit=100`;
+
+            const filters = [];
+            if (productCode) filters.push(`product_code=eq.${productCode}`);
+            if (componentType) filters.push(`component_type=eq.${componentType}`);
+            if (blueprintOnly === 'true') filters.push(`is_blueprint=eq.true`);
+
+            if (filters.length > 0) {
+                url += '&' + filters.join('&');
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const images = await response.json();
+                currentImages = images;
+                displayImages(images);
+
+                // Show message if no filters applied
+                if (!productCode && !componentType && blueprintOnly !== 'true') {
+                    if (images.length === 100) {
+                        document.getElementById('imagesContainer').innerHTML +=
+                            '<div style="text-align: center; margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; color: #1976d2;">' +
+                            '<strong>📄 Showing first 100 images</strong><br>' +
+                            'Use specific search filters to find particular images.' +
+                            '</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error searching images:', error);
+                document.getElementById('imagesContainer').innerHTML =
+                    '<div class="error">Error searching images. Please try again.</div>';
+            }
+        }
+
+        function displayImages(images) {
+            const container = document.getElementById('imagesContainer');
+            const countElement = document.getElementById('imagesCount');
+
+            countElement.textContent = `${images.length} images found`;
+
+            if (images.length === 0) {
+                container.innerHTML = '<div class="loading">No images found matching your criteria.</div>';
+                return;
+            }
+
+            // Create grid layout
+            container.innerHTML = `
+                <div class="images-grid">
+                    ${images.map(image => createImageCard(image)).join('')}
+                </div>
+            `;
+
+            // Load images in the grid after displaying
+            loadImagesInGrid(images);
+        }
+
+        function createImageCard(image) {
+            // Create a unique ID for this image card
+            const cardId = `image-card-${image.id}`;
+
+            return `
+                <div class="image-card" id="${cardId}" onclick="showImageDetails(${image.id})">
+                    <div class="image-container">
+                        <div class="image-placeholder">
+                            <div>
+                                <div style="font-size: 2em;">🔄</div>
+                                <div style="font-size: 0.8em;">Loading...</div>
+                            </div>
+                        </div>
+                        <img src="" alt="Blueprint drawing" style="display: none;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" onerror="this.previousElementSibling.innerHTML='<div style=\\'text-align: center;\\'><div style=\\'font-size: 2em;\\'>❌</div><div style=\\'font-size: 0.8em;\\'>Error</div></div>'; this.previousElementSibling.style.display='flex';">
+                    </div>
+                    <div class="image-info">
+                        <div class="image-title">Page ${image.page_number}</div>
+                        <div class="image-details">
+                            ${image.product_code ? `<span class="product-code">${image.product_code}</span>` : ''}
+                            ${image.component_type ? `<span class="component-type">${image.component_type}</span>` : ''}
+                            <br>
+                            <small>Quality: ${image.image_quality_score || 'N/A'}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadImagesInGrid(images) {
+            // Load images in batches to avoid overwhelming the server
+            const batchSize = 5;
+            for (let i = 0; i < images.length; i += batchSize) {
+                const batch = images.slice(i, i + batchSize);
+
+                // Load each image in the batch
+                for (const image of batch) {
+                    try {
+                        const response = await fetch(`${SUPABASE_URL}/rest/v1/product_images?select=image_data&id=eq.${image.id}`, {
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            const imageData = await response.json();
+                            if (imageData && imageData[0] && imageData[0].image_data) {
+                                const imgElement = document.querySelector(`#image-card-${image.id} img`);
+                                if (imgElement) {
+                                    imgElement.src = `data:image/png;base64,${imageData[0].image_data}`;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error loading image ${image.id}:`, error);
+                    }
+                }
+
+                // Small delay between batches to avoid overwhelming the server
+                if (i + batchSize < images.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+        }
+
+        async function showImageDetails(imageId) {
+            const image = currentImages.find(img => img.id === imageId);
+            if (!image) return;
+
+            const modal = document.getElementById('imageModal');
+            const modalContent = document.getElementById('modalContent');
+
+            // Show loading message
+            modalContent.innerHTML = `
+                <h2>Image Details</h2>
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 2em;">🔄</div>
+                    <p>Loading image...</p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p><strong>Page:</strong> ${image.page_number}</p>
+                    <p><strong>Product Code:</strong> ${image.product_code || 'Not specified'}</p>
+                    <p><strong>Component Type:</strong> ${image.component_type || 'Not specified'}</p>
+                    <p><strong>Blueprint:</strong> ${image.is_blueprint ? 'Yes' : 'No'}</p>
+                    <p><strong>Quality Score:</strong> ${image.image_quality_score || 'N/A'}</p>
+                    <p><strong>Extraction Date:</strong> ${new Date(image.extraction_date).toLocaleDateString()}</p>
+                    ${image.associated_text ? `<p><strong>Associated Text:</strong> ${image.associated_text}</p>` : ''}
+                </div>
+            `;
+
+            modal.style.display = 'block';
+
+            // Load image data on demand
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/product_images?select=image_data&id=eq.${imageId}`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const imageData = await response.json();
+                    if (imageData && imageData[0] && imageData[0].image_data) {
+                        const imageSrc = `data:image/png;base64,${imageData[0].image_data}`;
+
+                        modalContent.innerHTML = `
+                            <h2>Image Details</h2>
+                            <img src="${imageSrc}" alt="Blueprint drawing" class="modal-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';">
+                            <div style="margin-top: 20px;">
+                                <p><strong>Page:</strong> ${image.page_number}</p>
+                                <p><strong>Product Code:</strong> ${image.product_code || 'Not specified'}</p>
+                                <p><strong>Component Type:</strong> ${image.component_type || 'Not specified'}</p>
+                                <p><strong>Blueprint:</strong> ${image.is_blueprint ? 'Yes' : 'No'}</p>
+                                <p><strong>Quality Score:</strong> ${image.image_quality_score || 'N/A'}</p>
+                                <p><strong>Extraction Date:</strong> ${new Date(image.extraction_date).toLocaleDateString()}</p>
+                                ${image.associated_text ? `<p><strong>Associated Text:</strong> ${image.associated_text}</p>` : ''}
+                            </div>
+                        `;
+                    } else {
+                        modalContent.innerHTML = `
+                            <h2>Image Details</h2>
+                            <div style="text-align: center; padding: 40px;">
+                                <div style="font-size: 2em;">❌</div>
+                                <p>Image data not available</p>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <p><strong>Page:</strong> ${image.page_number}</p>
+                                <p><strong>Product Code:</strong> ${image.product_code || 'Not specified'}</p>
+                                <p><strong>Component Type:</strong> ${image.component_type || 'Not specified'}</p>
+                                <p><strong>Blueprint:</strong> ${image.is_blueprint ? 'Yes' : 'No'}</p>
+                                <p><strong>Quality Score:</strong> ${image.image_quality_score || 'N/A'}</p>
+                                <p><strong>Extraction Date:</strong> ${new Date(image.extraction_date).toLocaleDateString()}</p>
+                                ${image.associated_text ? `<p><strong>Associated Text:</strong> ${image.associated_text}</p>` : ''}
+                            </div>
+                        `;
+                    }
+                } else {
+                    throw new Error(`Failed to load image data: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error loading image data:', error);
+                modalContent.innerHTML = `
+                    <h2>Image Details</h2>
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 2em;">❌</div>
+                        <p>Error loading image data</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <p><strong>Page:</strong> ${image.page_number}</p>
+                        <p><strong>Product Code:</strong> ${image.product_code || 'Not specified'}</p>
+                        <p><strong>Component Type:</strong> ${image.component_type || 'Not specified'}</p>
+                        <p><strong>Blueprint:</strong> ${image.is_blueprint ? 'Yes' : 'No'}</p>
+                        <p><strong>Quality Score:</strong> ${image.image_quality_score || 'N/A'}</p>
+                        <p><strong>Extraction Date:</strong> ${new Date(image.extraction_date).toLocaleDateString()}</p>
+                        ${image.associated_text ? `<p><strong>Associated Text:</strong> ${image.associated_text}</p>` : ''}
+                    </div>
+                `;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_image_stats`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const stats = await response.json();
+                displayStats(stats[0] || {});
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('statsSection').innerHTML =
+                    '<div class="error">Error loading statistics. Please make sure the database functions exist.</div>';
+            }
+        }
+
+        function displayStats(stats) {
+            const statsSection = document.getElementById('statsSection');
+            const statsGrid = document.getElementById('statsGrid');
+
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total_images || 0}</div>
+                    <div class="stat-label">Total Images</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.blueprint_images || 0}</div>
+                    <div class="stat-label">Blueprint Images</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.unique_product_codes || 0}</div>
+                    <div class="stat-label">Product Codes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.unique_component_types || 0}</div>
+                    <div class="stat-label">Component Types</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.avg_quality_score || 0}</div>
+                    <div class="stat-label">Avg Quality</div>
+                </div>
+            `;
+
+            statsSection.style.display = 'block';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+
+</html>
